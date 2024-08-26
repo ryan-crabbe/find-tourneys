@@ -8,25 +8,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
+const config_1 = require("@nestjs/config");
+const axios_1 = require("@nestjs/axios");
+const tournaments_controller_1 = require("./tournaments/tournaments.controller");
+const tournaments_service_1 = require("./tournaments/tournaments.service");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forRoot({
-                type: 'postgres',
-                host: 'localhost',
-                port: 5432,
-                username: 'postgres',
-                password: 'yourpassword',
-                database: 'tournament_map',
-                autoLoadEntities: true,
-                synchronize: true,
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
             }),
+            axios_1.HttpModule,
         ],
-        controllers: [],
-        providers: [],
+        controllers: [tournaments_controller_1.TournamentsController],
+        providers: [tournaments_service_1.TournamentsService],
     })
 ], AppModule);
 exports.AppModule = AppModule;
