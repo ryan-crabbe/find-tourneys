@@ -5,30 +5,43 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class TournamentsService {
-  private readonly apiUrl: string = 'https://api.start.gg/tournaments';
+  private readonly apiUrl: string = 'https://api.start.gg/gql/alpha';
 
   constructor(
     private httpService: HttpService,
     private configService: ConfigService
   ) {}
 
-  async getTournaments(location: string, startDate: string, endDate: string): Promise<any> {
+  async getTournaments(location: string): Promise<any> {
     const authToken = this.configService.get<string>('STARTGG_AUTH_TOKEN');
     const query = `
-      query {
-        tournaments(query: {location: "${location}", startDate: "${startDate}", endDate: "${endDate}"}) {
-          id
-          name
-          location
-          date
-        }
+      query SocalTournaments($location: String!) {
+  tournaments(query: {
+    perPage: 4
+    filter: {
+      location: {
+        distanceFrom: $location,
+        distance: "100mi"
       }
+    }
+  }) {
+    nodes {
+      id
+      name
+      city
+    }
+  }
+}
     `;
+
+    const variables = {
+        location
+    }
 
     try {
         const response = await firstValueFrom(this.httpService.post(
             this.apiUrl,
-            { query },
+            { query, variables },
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -36,8 +49,8 @@ export class TournamentsService {
               },
             }
           ));
-    
-          return response.data.data.tournaments;
+          console.log('API Response:', response.data);
+          return response.data;
     } catch (error) {
       console.error('Error fetching tournaments:', error);
       throw error;

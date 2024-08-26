@@ -19,17 +19,15 @@ let TournamentsController = class TournamentsController {
     constructor(tournamentsService) {
         this.tournamentsService = tournamentsService;
     }
-    async getTournaments(location, startDate, endDate) {
-        return this.tournamentsService.getTournaments(location, startDate, endDate);
+    async getTournaments(location) {
+        return this.tournamentsService.getTournaments(location);
     }
 };
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)('location')),
-    __param(1, (0, common_1.Query)('startDate')),
-    __param(2, (0, common_1.Query)('endDate')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TournamentsController.prototype, "getTournaments", null);
 TournamentsController = __decorate([

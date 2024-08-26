@@ -5,5 +5,5 @@ export declare class TournamentsService {
     private configService;
     private readonly apiUrl;
     constructor(httpService: HttpService, configService: ConfigService);
-    getTournaments(location: string, startDate: string, endDate: string): Promise<any>;
+    getTournaments(location: string): Promise<any>;
 }

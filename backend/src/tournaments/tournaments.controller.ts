@@ -8,9 +8,7 @@ export class TournamentsController {
   @Get()
   async getTournaments(
     @Query('location') location: string,
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
   ) {
-    return this.tournamentsService.getTournaments(location, startDate, endDate);
+    return this.tournamentsService.getTournaments(location);
   }
 }

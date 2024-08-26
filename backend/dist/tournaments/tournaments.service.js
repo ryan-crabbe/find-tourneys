@@ -18,28 +18,41 @@ let TournamentsService = class TournamentsService {
     constructor(httpService, configService) {
         this.httpService = httpService;
         this.configService = configService;
-        this.apiUrl = 'https://api.start.gg/tournaments';
+        this.apiUrl = 'https://api.start.gg/gql/alpha';
     }
-    async getTournaments(location, startDate, endDate) {
+    async getTournaments(location) {
         const authToken = this.configService.get('STARTGG_AUTH_TOKEN');
         const query = `
-      query {
-        tournaments(query: {location: "${location}", startDate: "${startDate}", endDate: "${endDate}"}) {
-          id
-          name
-          location
-          date
-        }
+      query SocalTournaments($location: String!) {
+  tournaments(query: {
+    perPage: 4
+    filter: {
+      location: {
+        distanceFrom: $location,
+        distance: "100mi"
       }
+    }
+  }) {
+    nodes {
+      id
+      name
+      city
+    }
+  }
+}
     `;
+        const variables = {
+            location
+        };
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(this.apiUrl, { query }, {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(this.apiUrl, { query, variables }, {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                     'Content-Type': 'application/json',
                 },
             }));
-            return response.data.data.tournaments;
+            console.log('API Response:', response.data);
+            return response.data;
         }
         catch (error) {
             console.error('Error fetching tournaments:', error);
