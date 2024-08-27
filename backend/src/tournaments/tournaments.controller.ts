@@ -7,8 +7,8 @@ export class TournamentsController {
 
   @Get()
   async getTournaments(
-    @Query('location') location: string,
+    @Query('coordinates') coordinates: string,
   ) {
-    return this.tournamentsService.getTournaments(location);
+    return this.tournamentsService.getTournaments(coordinates);
   }
 }

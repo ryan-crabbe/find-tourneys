@@ -2,5 +2,5 @@ import { TournamentsService } from './tournaments.service';
 export declare class TournamentsController {
     private readonly tournamentsService;
     constructor(tournamentsService: TournamentsService);
-    getTournaments(location: string): Promise<any>;
+    getTournaments(coordinates: string): Promise<any>;
 }

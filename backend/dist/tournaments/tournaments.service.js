@@ -20,18 +20,25 @@ let TournamentsService = class TournamentsService {
         this.configService = configService;
         this.apiUrl = 'https://api.start.gg/gql/alpha';
     }
-    async getTournaments(location) {
+    async getTournaments(coordinates) {
         const authToken = this.configService.get('STARTGG_AUTH_TOKEN');
+        const startDate = Math.floor(Date.now() / 1000);
+        const beforeDate = startDate + 7 * 24 * 60 * 60;
+        const radius = "50mi";
+        const perPage = 20;
         const query = `
-      query SocalTournaments($location: String!) {
+      query SocalTournaments($perPage: Int, $coordinates: String!, $radius: String!, $startDate: Timestamp, $beforeDate: Timestamp) {
   tournaments(query: {
-    perPage: 4
+    perPage: $perPage
     filter: {
+      afterDate: $startDate
+      beforeDate:$beforeDate
       location: {
-        distanceFrom: $location,
-        distance: "100mi"
+        distanceFrom: $coordinates,
+        distance: $radius
       }
     }
+    sort: endAt
   }) {
     nodes {
       id
@@ -42,7 +49,11 @@ let TournamentsService = class TournamentsService {
 }
     `;
         const variables = {
-            location
+            perPage: perPage,
+            coordinates: coordinates,
+            radius: radius,
+            startDate: startDate,
+            beforeDate: beforeDate
         };
         try {
             const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(this.apiUrl, { query, variables }, {
@@ -51,7 +62,7 @@ let TournamentsService = class TournamentsService {
                     'Content-Type': 'application/json',
                 },
             }));
-            console.log('API Response:', response.data);
+            console.log('API Response:', response.data.data.tournaments.nodes);
             return response.data;
         }
         catch (error) {

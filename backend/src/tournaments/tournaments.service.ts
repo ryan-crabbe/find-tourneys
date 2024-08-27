@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { before } from 'node:test';
 
 @Injectable()
 export class TournamentsService {
@@ -12,18 +13,27 @@ export class TournamentsService {
     private configService: ConfigService
   ) {}
 
-  async getTournaments(location: string): Promise<any> {
+  async getTournaments(coordinates: string): Promise<any> {
     const authToken = this.configService.get<string>('STARTGG_AUTH_TOKEN');
+
+    const startDate = Math.floor(Date.now() / 1000); 
+    const beforeDate = startDate + 7 * 24 * 60 * 60;
+    const radius = "50mi"
+    const perPage = 20
+
     const query = `
-      query SocalTournaments($location: String!) {
+      query SocalTournaments($perPage: Int, $coordinates: String!, $radius: String!, $startDate: Timestamp, $beforeDate: Timestamp) {
   tournaments(query: {
-    perPage: 4
+    perPage: $perPage
     filter: {
+      afterDate: $startDate
+      beforeDate:$beforeDate
       location: {
-        distanceFrom: $location,
-        distance: "100mi"
+        distanceFrom: $coordinates,
+        distance: $radius
       }
     }
+    sort: endAt
   }) {
     nodes {
       id
@@ -35,7 +45,11 @@ export class TournamentsService {
     `;
 
     const variables = {
-        location
+        perPage: perPage,
+        coordinates: coordinates,
+        radius: radius, 
+        startDate: startDate,
+        beforeDate: beforeDate
     }
 
     try {
@@ -49,7 +63,7 @@ export class TournamentsService {
               },
             }
           ));
-          console.log('API Response:', response.data);
+          console.log('API Response:', response.data.data.tournaments.nodes);
           return response.data;
     } catch (error) {
       console.error('Error fetching tournaments:', error);
