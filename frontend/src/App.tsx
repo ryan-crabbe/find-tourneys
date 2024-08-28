@@ -1,35 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
+import { getTournaments } from "./services/tournamentService";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [coordinates, setCoordinates] = useState("37.75439, -121.91937");
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTournaments = async () => {
+    setLoading(true);
+    setError(null); // Reset error state before new request
+
+    try {
+      const data = await getTournaments(coordinates);
+      console.log("Fetched tournaments:", data); // For debugging purposes
+      setTournaments(data);
+    } catch (err) {
+      console.error("Error fetching tournaments:", err);
+      setError("Failed to fetch tournaments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTournaments();
+  }, [coordinates]);
 
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <h1>Tournaments Near You</h1>
+        <button onClick={fetchTournaments} disabled={loading}>
+          {loading ? "Loading..." : "Fetch Tournaments"}
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        {error && <p>{error}</p>}
+        <ul>
+          {tournaments.map((tournament: any) => (
+            <li key={tournament.id}>
+              {tournament.name} - {tournament.city} - {tournament.venueAddress}
+            </li>
+          ))}
+        </ul>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

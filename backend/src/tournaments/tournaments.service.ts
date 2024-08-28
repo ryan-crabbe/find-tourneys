@@ -19,7 +19,7 @@ export class TournamentsService {
     const startDate = Math.floor(Date.now() / 1000); 
     const beforeDate = startDate + 7 * 24 * 60 * 60;
     const radius = "50mi"
-    const perPage = 20
+    const perPage = 5
 
     const query = `
       query SocalTournaments($perPage: Int, $coordinates: String!, $radius: String!, $startDate: Timestamp, $beforeDate: Timestamp) {
@@ -39,6 +39,7 @@ export class TournamentsService {
       id
       name
       city
+      venueAddress
     }
   }
 }
@@ -64,7 +65,7 @@ export class TournamentsService {
             }
           ));
           console.log('API Response:', response.data.data.tournaments.nodes);
-          return response.data;
+          return response.data.data.tournaments.nodes;
     } catch (error) {
       console.error('Error fetching tournaments:', error);
       throw error;
