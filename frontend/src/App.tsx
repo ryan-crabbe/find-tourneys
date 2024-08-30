@@ -34,6 +34,7 @@ function App() {
   const [usersCoordinates, setUsersCoordinates] = useState("");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTourney, setSelectedTourney] = useState<Tournament | null>(
     null
@@ -70,7 +71,6 @@ function App() {
       );
 
       setTournaments(tournamentsWithCoords);
-      setError(null);
     } catch (err) {
       console.error("Error fetching tournaments:", err);
       setError("Failed to fetch tournaments");
@@ -102,13 +102,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchTournaments();
+    if (usersCoordinates) {
+      fetchTournaments().then(() => {
+        setMapReady(true);
+      });
+    }
   }, [usersCoordinates]);
-
-  const center = getCoordinatesObject(usersCoordinates);
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
+
+  const center = getCoordinatesObject(usersCoordinates);
 
   return (
     <Container className="container" maxWidth="md">
@@ -116,20 +120,12 @@ function App() {
         <Typography variant="h3" gutterBottom>
           Tournaments Near You
         </Typography>
-        {error && <Typography color="error">{error}</Typography>}
       </Box>
 
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        mt={5}
-        mb={5}
-        width="100%"
-      >
+      <Box mt={5} mb={5} width="100%">
         {loading ? (
-          <Typography variant="h6">Loading Tournaments...</Typography> // Loading message
-        ) : (
+          <Typography variant="h6">Loading Tournaments...</Typography>
+        ) : mapReady ? (
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             zoom={8}
@@ -175,6 +171,8 @@ function App() {
               </InfoWindow>
             )}
           </GoogleMap>
+        ) : (
+          <Typography variant="h6">Preparing Map...</Typography>
         )}
       </Box>
 

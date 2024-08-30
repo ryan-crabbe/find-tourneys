@@ -21,6 +21,7 @@ let TournamentsService = class TournamentsService {
         this.apiUrl = 'https://api.start.gg/gql/alpha';
     }
     async getTournaments(coordinates) {
+        var _a, _b;
         const authToken = this.configService.get('STARTGG_AUTH_TOKEN');
         const startDate = Math.floor(Date.now() / 1000);
         const beforeDate = startDate + 7 * 24 * 60 * 60;
@@ -65,7 +66,14 @@ let TournamentsService = class TournamentsService {
                     'Content-Type': 'application/json',
                 },
             }));
-            console.log('API Response:', response.data.data.tournaments.nodes);
+            const tournamentsData = (_b = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.tournaments;
+            if (tournamentsData && tournamentsData.nodes) {
+                return tournamentsData.nodes;
+            }
+            else {
+                console.log('No nodes found in the API response or response is null');
+                return [];
+            }
             return response.data.data.tournaments.nodes;
         }
         catch (error) {
