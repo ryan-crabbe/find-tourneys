@@ -8,7 +8,7 @@ type Tournament = {
   id: string;
   name: string;
   city: string;
-  venueAddress?: string; // if you use it in the map
+  venueAddress?: string;
   lat?: number;
   lng?: number;
 };
