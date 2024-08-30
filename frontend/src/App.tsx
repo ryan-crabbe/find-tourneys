@@ -1,8 +1,23 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import { getTournaments } from "./services/tournamentService";
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  Marker,
+  InfoWindow,
+  useLoadScript,
+} from "@react-google-maps/api";
 import { getCoordinates } from "./services/coordinatesService";
+import {
+  Box,
+  Card,
+  CardContent,
+  Container,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 
 type Tournament = {
   id: string;
@@ -11,14 +26,18 @@ type Tournament = {
   venueAddress?: string;
   lat?: number;
   lng?: number;
+  slug?: string;
+  numAttendees?: number;
 };
 
 function App() {
-  const [usersCoordinates, setUsersCoordinates] =
-    useState("32.7157, -117.1611");
+  const [usersCoordinates, setUsersCoordinates] = useState("");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTourney, setSelectedTourney] = useState<Tournament | null>(
+    null
+  );
 
   const getCoordinatesObject = (coordinatesString: string) => {
     const [lat, lng] = coordinatesString.split(",").map(Number);
@@ -26,8 +45,9 @@ function App() {
   };
 
   const mapContainerStyle = {
-    width: "100vw",
+    width: "100%",
     height: "400px",
+    margin: "0 auto",
   };
 
   const { isLoaded, loadError } = useLoadScript({
@@ -50,6 +70,7 @@ function App() {
       );
 
       setTournaments(tournamentsWithCoords);
+      setError(null);
     } catch (err) {
       console.error("Error fetching tournaments:", err);
       setError("Failed to fetch tournaments");
@@ -72,7 +93,6 @@ function App() {
             console.error(error);
           }
         );
-        console.log(usersCoordinates);
       } else {
         setError("Geolocation is not supported by your browser");
       }
@@ -91,36 +111,95 @@ function App() {
   if (!isLoaded) return <div>Loading Maps...</div>;
 
   return (
-    <>
-      <div>
-        <h1>Tournaments Near You</h1>
-        <button onClick={fetchTournaments} disabled={loading}>
-          {loading ? "Loading..." : "Fetch Tournaments"}
-        </button>
-        {error && <p>{error}</p>}
-        <ul>
-          {tournaments.map((tournament: any) => (
-            <li key={tournament.id}>
-              {tournament.name} - {tournament.venueAddress} - lat:{" "}
-              {tournament.lat} - long: {tournament.lng}
-            </li>
+    <Container className="container" maxWidth="md">
+      <Box textAlign="center" mt={5}>
+        <Typography variant="h3" gutterBottom>
+          Tournaments Near You
+        </Typography>
+        {error && <Typography color="error">{error}</Typography>}
+      </Box>
+
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        mt={5}
+        mb={5}
+        width="100%"
+      >
+        {loading ? (
+          <Typography variant="h6">Loading Tournaments...</Typography> // Loading message
+        ) : (
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={8}
+            center={center}
+          >
+            {tournaments.map((tournament: Tournament) => (
+              <Marker
+                key={tournament.id}
+                position={{ lat: tournament.lat!, lng: tournament.lng! }}
+                title={tournament.name}
+                onClick={() => setSelectedTourney(tournament)}
+              />
+            ))}
+
+            {selectedTourney && (
+              <InfoWindow
+                position={{
+                  lat: selectedTourney.lat!,
+                  lng: selectedTourney.lng!,
+                }}
+                onCloseClick={() => setSelectedTourney(null)}
+              >
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" component="div">
+                      <a
+                        href={`https://start.gg/${selectedTourney.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: "none", color: "#4A148C" }}
+                      >
+                        {selectedTourney.name}
+                      </a>
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {selectedTourney.numAttendees} entrants rn
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedTourney.venueAddress}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </InfoWindow>
+            )}
+          </GoogleMap>
+        )}
+      </Box>
+
+      <Box>
+        <List>
+          {tournaments.map((tournament: Tournament) => (
+            <ListItem key={tournament.id} className="list-item">
+              <ListItemText
+                primary={
+                  <a
+                    href={`https://start.gg/${tournament.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none", color: "#4A148C" }}
+                  >
+                    {tournament.name}
+                  </a>
+                }
+                secondary={`${tournament.venueAddress} - Number of Entrants:${tournament.numAttendees}`}
+              />
+            </ListItem>
           ))}
-        </ul>
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          zoom={10}
-          center={center}
-        >
-          {tournaments.map((tournament: any) => (
-            <Marker
-              key={tournament.id}
-              position={{ lat: tournament.lat, lng: tournament.lng }}
-              title={tournament.name}
-            />
-          ))}
-        </GoogleMap>
-      </div>
-    </>
+        </List>
+      </Box>
+    </Container>
   );
 }
 

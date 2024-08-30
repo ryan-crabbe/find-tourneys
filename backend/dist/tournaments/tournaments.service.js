@@ -45,6 +45,8 @@ let TournamentsService = class TournamentsService {
       name
       city
       venueAddress
+      slug
+      numAttendees
     }
   }
 }

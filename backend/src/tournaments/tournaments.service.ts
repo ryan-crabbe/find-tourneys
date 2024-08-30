@@ -40,6 +40,8 @@ export class TournamentsService {
       name
       city
       venueAddress
+      slug
+      numAttendees
     }
   }
 }
