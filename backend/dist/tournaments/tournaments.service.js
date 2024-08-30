@@ -68,13 +68,13 @@ let TournamentsService = class TournamentsService {
             }));
             const tournamentsData = (_b = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.tournaments;
             if (tournamentsData && tournamentsData.nodes) {
+                console.log(tournamentsData.nodes);
                 return tournamentsData.nodes;
             }
             else {
                 console.log('No nodes found in the API response or response is null');
                 return [];
             }
-            return response.data.data.tournaments.nodes;
         }
         catch (error) {
             console.error('Error fetching tournaments:', error);

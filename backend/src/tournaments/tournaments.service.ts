@@ -68,12 +68,12 @@ export class TournamentsService {
           ));
           const tournamentsData = response?.data?.data?.tournaments;
           if (tournamentsData && tournamentsData.nodes) {
+            console.log(tournamentsData.nodes)
             return tournamentsData.nodes;
           } else {
             console.log('No nodes found in the API response or response is null');
             return [];  // Return an empty array or handle the case where no tournaments are found
           }
-          return response.data.data.tournaments.nodes;
     } catch (error) {
       console.error('Error fetching tournaments:', error);
       throw error;

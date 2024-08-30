@@ -9,14 +9,14 @@ import {
 } from "@react-google-maps/api";
 import { getCoordinates } from "./services/coordinatesService";
 import {
-  Box,
-  Card,
-  CardContent,
   Container,
+  Box,
+  Typography,
   List,
   ListItem,
   ListItemText,
-  Typography,
+  Card,
+  CardContent,
 } from "@mui/material";
 
 type Tournament = {
@@ -34,7 +34,6 @@ function App() {
   const [usersCoordinates, setUsersCoordinates] = useState("");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTourney, setSelectedTourney] = useState<Tournament | null>(
     null
@@ -103,80 +102,77 @@ function App() {
 
   useEffect(() => {
     if (usersCoordinates) {
-      fetchTournaments().then(() => {
-        setMapReady(true);
-      });
+      fetchTournaments();
     }
   }, [usersCoordinates]);
 
-  if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading Maps...</div>;
-
   const center = getCoordinatesObject(usersCoordinates);
 
+  const renderMap = () => {
+    if (loadError) return <div>Error loading map</div>;
+    if (!isLoaded) return <div>Loading map...</div>;
+
+    return (
+      <GoogleMap mapContainerStyle={mapContainerStyle} zoom={8} center={center}>
+        {tournaments.map((tournament: Tournament) => (
+          <Marker
+            key={tournament.id}
+            position={{ lat: tournament.lat!, lng: tournament.lng! }}
+            title={tournament.name}
+            onClick={() => setSelectedTourney(tournament)}
+          />
+        ))}
+
+        {selectedTourney && (
+          <InfoWindow
+            position={{
+              lat: selectedTourney.lat!,
+              lng: selectedTourney.lng!,
+            }}
+            onCloseClick={() => setSelectedTourney(null)}
+          >
+            <Card>
+              <CardContent>
+                <Typography variant="h6" component="div">
+                  <a
+                    href={`https://start.gg/${selectedTourney.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none", color: "#4A148C" }}
+                  >
+                    {selectedTourney.name}
+                  </a>
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {selectedTourney.numAttendees} entrants rn
+                </Typography>
+                <Typography variant="body2">
+                  {selectedTourney.venueAddress}
+                </Typography>
+              </CardContent>
+            </Card>
+          </InfoWindow>
+        )}
+      </GoogleMap>
+    );
+  };
+
   return (
-    <Container className="container" maxWidth="md">
+    <Container maxWidth="md">
       <Box textAlign="center" mt={5}>
         <Typography variant="h3" gutterBottom>
           Tournaments Near You
         </Typography>
       </Box>
 
-      <Box mt={5} mb={5} width="100%">
-        {loading ? (
-          <Typography variant="h6">Loading Tournaments...</Typography>
-        ) : mapReady ? (
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            zoom={8}
-            center={center}
-          >
-            {tournaments.map((tournament: Tournament) => (
-              <Marker
-                key={tournament.id}
-                position={{ lat: tournament.lat!, lng: tournament.lng! }}
-                title={tournament.name}
-                onClick={() => setSelectedTourney(tournament)}
-              />
-            ))}
-
-            {selectedTourney && (
-              <InfoWindow
-                position={{
-                  lat: selectedTourney.lat!,
-                  lng: selectedTourney.lng!,
-                }}
-                onCloseClick={() => setSelectedTourney(null)}
-              >
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" component="div">
-                      <a
-                        href={`https://start.gg/${selectedTourney.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ textDecoration: "none", color: "#4A148C" }}
-                      >
-                        {selectedTourney.name}
-                      </a>
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {selectedTourney.numAttendees} entrants rn
-                    </Typography>
-                    <Typography variant="body2">
-                      {selectedTourney.venueAddress}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </InfoWindow>
-            )}
-          </GoogleMap>
-        ) : (
-          <Typography variant="h6">Preparing Map...</Typography>
-        )}
+      <Box mt={5} mb={5}>
+        {renderMap()}
       </Box>
 
       <Box>
+        <Typography variant="h6" gutterBottom>
+          Tournaments
+        </Typography>
         <List>
           {tournaments.map((tournament: Tournament) => (
             <ListItem key={tournament.id} className="list-item">
@@ -191,7 +187,7 @@ function App() {
                     {tournament.name}
                   </a>
                 }
-                secondary={`${tournament.venueAddress} - Number of Entrants:${tournament.numAttendees}`}
+                secondary={`${tournament.venueAddress} - ${tournament.city}`}
               />
             </ListItem>
           ))}
