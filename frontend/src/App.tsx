@@ -28,6 +28,7 @@ type Tournament = {
   lng?: number;
   slug?: string;
   numAttendees?: number;
+  startAt?: string;
 };
 
 function App() {
@@ -38,6 +39,24 @@ function App() {
   const [selectedTourney, setSelectedTourney] = useState<Tournament | null>(
     null
   );
+
+  const getDateTime = (unixTimestamp: string) => {
+    const date = new Date(Number(unixTimestamp) * 1000);
+
+    const formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Format the time
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${formattedDate} at ${formattedTime}`;
+  };
 
   const getCoordinatesObject = (coordinatesString: string) => {
     const [lat, lng] = coordinatesString.split(",").map(Number);
@@ -113,7 +132,7 @@ function App() {
     if (!isLoaded) return <div>Loading map...</div>;
 
     return (
-      <GoogleMap mapContainerStyle={mapContainerStyle} zoom={8} center={center}>
+      <GoogleMap mapContainerStyle={mapContainerStyle} zoom={9} center={center}>
         {tournaments.map((tournament: Tournament) => (
           <Marker
             key={tournament.id}
@@ -147,7 +166,10 @@ function App() {
                   {selectedTourney.numAttendees} entrants rn
                 </Typography>
                 <Typography variant="body2">
-                  {selectedTourney.venueAddress}
+                  Starts at: {getDateTime(selectedTourney.startAt!)}
+                </Typography>
+                <Typography variant="body2">
+                  Address: {selectedTourney.venueAddress}
                 </Typography>
               </CardContent>
             </Card>
@@ -187,7 +209,14 @@ function App() {
                     {tournament.name}
                   </a>
                 }
-                secondary={`${tournament.venueAddress} - ${tournament.city}`}
+                secondary={
+                  <>
+                    Starts at: {getDateTime(tournament.startAt!)} <br />
+                    Entrants: {tournament.numAttendees}
+                    <br />
+                    Address: {tournament.venueAddress}
+                  </>
+                }
               />
             </ListItem>
           ))}

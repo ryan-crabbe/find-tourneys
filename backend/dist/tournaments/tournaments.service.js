@@ -48,6 +48,7 @@ let TournamentsService = class TournamentsService {
       venueAddress
       slug
       numAttendees
+      startAt
     }
   }
 }
