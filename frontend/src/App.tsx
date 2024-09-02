@@ -19,7 +19,7 @@ import {
   CardContent,
 } from "@mui/material";
 
-type Tournament = {
+interface Tournament {
   id: string;
   name: string;
   city: string;
@@ -29,7 +29,7 @@ type Tournament = {
   slug?: string;
   numAttendees?: number;
   startAt?: string;
-};
+}
 
 function App() {
   const [usersCoordinates, setUsersCoordinates] = useState("");
