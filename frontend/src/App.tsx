@@ -17,6 +17,7 @@ import {
   ListItemText,
   Card,
   CardContent,
+  Button,
 } from "@mui/material";
 
 interface Tournament {
@@ -179,6 +180,10 @@ function App() {
     );
   };
 
+  function handleAddToCalendar(tournament: Tournament): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <Container maxWidth="md">
       <Box textAlign="center" mt={5}>
@@ -218,6 +223,13 @@ function App() {
                   </>
                 }
               />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleAddToCalendar(tournament)}
+              >
+                Add to Google Calendar
+              </Button>
             </ListItem>
           ))}
         </List>
