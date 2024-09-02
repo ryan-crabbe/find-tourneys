@@ -185,6 +185,8 @@ function App() {
         <Typography variant="h3" gutterBottom>
           Tournaments Near You
         </Typography>
+        {loading && <Typography>Loading tournaments...</Typography>}
+        {error && <Typography color="error">{error}</Typography>}
       </Box>
 
       <Box mt={5} mb={5}>
