@@ -8,16 +8,7 @@ import {
   useLoadScript,
 } from "@react-google-maps/api";
 import { getCoordinates } from "./services/coordinatesService";
-import {
-  Container,
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Card,
-  CardContent,
-} from "@mui/material";
+import { Typography, List, ListItem, Card, CardContent } from "@mui/material";
 
 interface Tournament {
   id: string;
@@ -42,31 +33,18 @@ function App() {
 
   const getDateTime = (unixTimestamp: string) => {
     const date = new Date(Number(unixTimestamp) * 1000);
-
-    const formattedDate = date.toLocaleDateString("en-US", {
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
-
-    // Format the time
-    const formattedTime = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
-
-    return `${formattedDate} at ${formattedTime}`;
-  };
-
-  const getCoordinatesObject = (coordinatesString: string) => {
-    const [lat, lng] = coordinatesString.split(",").map(Number);
-    return { lat, lng };
   };
 
   const mapContainerStyle = {
     width: "100%",
-    height: "400px",
-    margin: "0 auto",
+    height: "100%",
   };
 
   const { isLoaded, loadError } = useLoadScript({
@@ -79,15 +57,12 @@ function App() {
 
     try {
       const data = await getTournaments(usersCoordinates);
-      console.log("Fetched tournaments:", data);
-
       const tournamentsWithCoords = await Promise.all(
         data.map(async (tournament: Tournament) => {
           const coords = await getCoordinates(tournament.venueAddress!);
           return { ...tournament, ...coords };
         })
       );
-
       setTournaments(tournamentsWithCoords);
     } catch (err) {
       console.error("Error fetching tournaments:", err);
@@ -125,14 +100,21 @@ function App() {
     }
   }, [usersCoordinates]);
 
-  const center = getCoordinatesObject(usersCoordinates);
+  const getCenterCoordinates = (): google.maps.LatLngLiteral => {
+    const [lat, lng] = usersCoordinates.split(",").map(Number);
+    return { lat, lng };
+  };
 
   const renderMap = () => {
     if (loadError) return <div>Error loading map</div>;
     if (!isLoaded) return <div>Loading map...</div>;
 
     return (
-      <GoogleMap mapContainerStyle={mapContainerStyle} zoom={9} center={center}>
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        zoom={9}
+        center={getCenterCoordinates()}
+      >
         {tournaments.map((tournament: Tournament) => (
           <Marker
             key={tournament.id}
@@ -157,13 +139,12 @@ function App() {
                     href={`https://start.gg/${selectedTourney.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ textDecoration: "none", color: "#4A148C" }}
                   >
                     {selectedTourney.name}
                   </a>
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  {selectedTourney.numAttendees} entrants rn
+                  {selectedTourney.numAttendees} entrants
                 </Typography>
                 <Typography variant="body2">
                   Starts at: {getDateTime(selectedTourney.startAt!)}
@@ -180,51 +161,41 @@ function App() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Box textAlign="center" mt={5}>
-        <Typography variant="h3" gutterBottom>
-          Tournaments Near You
-        </Typography>
-        {loading && <Typography>Loading tournaments...</Typography>}
-        {error && <Typography color="error">{error}</Typography>}
-      </Box>
-
-      <Box mt={5} mb={5}>
-        {renderMap()}
-      </Box>
-
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          Tournaments
-        </Typography>
-        <List>
-          {tournaments.map((tournament: Tournament) => (
-            <ListItem key={tournament.id} className="list-item">
-              <ListItemText
-                primary={
-                  <a
-                    href={`https://start.gg/${tournament.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: "none", color: "#4A148C" }}
-                  >
-                    {tournament.name}
-                  </a>
-                }
-                secondary={
-                  <>
-                    Starts at: {getDateTime(tournament.startAt!)} <br />
-                    Entrants: {tournament.numAttendees}
-                    <br />
-                    Address: {tournament.venueAddress}
-                  </>
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    </Container>
+    <div className="app-container">
+      <Typography variant="h2" component="h1" gutterBottom>
+        Tournament Map
+      </Typography>
+      <div className="map-container">{renderMap()}</div>
+      <Typography variant="h3" component="h2" gutterBottom>
+        Tournament List
+      </Typography>
+      <List className="list-container">
+        {tournaments.map((tournament: Tournament) => (
+          <ListItem key={tournament.id} className="list-item">
+            <CardContent>
+              <Typography variant="h6" component="h3">
+                <a
+                  href={`https://start.gg/${tournament.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {tournament.name}
+                </a>
+              </Typography>
+              <Typography variant="body2">
+                Number of Entrants: {tournament.numAttendees}
+              </Typography>
+              <Typography variant="body2">
+                Address: {tournament.venueAddress}
+              </Typography>
+              <Typography variant="body2">
+                Starts at: {getDateTime(tournament.startAt!)}
+              </Typography>
+            </CardContent>
+          </ListItem>
+        ))}
+      </List>
+    </div>
   );
 }
 
