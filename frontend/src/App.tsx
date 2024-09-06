@@ -25,8 +25,6 @@ interface Tournament {
 function App() {
   const [usersCoordinates, setUsersCoordinates] = useState("");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [selectedTourney, setSelectedTourney] = useState<Tournament | null>(
     null
   );
@@ -52,9 +50,6 @@ function App() {
   });
 
   const fetchTournaments = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
       const data = await getTournaments(usersCoordinates);
       const tournamentsWithCoords = await Promise.all(
@@ -66,9 +61,6 @@ function App() {
       setTournaments(tournamentsWithCoords);
     } catch (err) {
       console.error("Error fetching tournaments:", err);
-      setError("Failed to fetch tournaments");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -79,15 +71,13 @@ function App() {
           (position) => {
             const { latitude, longitude } = position.coords;
             setUsersCoordinates(`${latitude},${longitude}`);
-            setError(null);
           },
           (error) => {
-            setError("Unable to retrieve your location");
-            console.error(error);
+            console.error("Unable to retrieve your location", error);
           }
         );
       } else {
-        setError("Geolocation is not supported by your browser");
+        console.error("Geolocation is not supported by your browser");
       }
     };
 
