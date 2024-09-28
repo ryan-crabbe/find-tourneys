@@ -96,8 +96,9 @@ function App() {
   };
 
   const renderMap = () => {
-    if (loadError) return <div>Error loading map</div>;
-    if (!isLoaded) return <div>Loading map...</div>;
+    if (loadError)
+      return <Typography color="error">Error loading map</Typography>;
+    if (!isLoaded) return <Typography>Map is Loading...</Typography>;
 
     return (
       <GoogleMap
