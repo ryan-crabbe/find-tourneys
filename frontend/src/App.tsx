@@ -8,7 +8,14 @@ import {
   useLoadScript,
 } from "@react-google-maps/api";
 import { getCoordinates } from "./services/coordinatesService";
-import { Typography, List, ListItem, Card, CardContent } from "@mui/material";
+import {
+  Typography,
+  List,
+  ListItem,
+  Card,
+  CardContent,
+  CircularProgress,
+} from "@mui/material";
 
 interface Tournament {
   id: string;
@@ -28,6 +35,7 @@ function App() {
   const [selectedTourney, setSelectedTourney] = useState<Tournament | null>(
     null
   );
+  const [isTournamentsLoading, setIsTournamentsLoading] = useState(true);
 
   const getDateTime = (unixTimestamp: string) => {
     const date = new Date(Number(unixTimestamp) * 1000);
@@ -51,6 +59,7 @@ function App() {
 
   const fetchTournaments = async () => {
     try {
+      setIsTournamentsLoading(true);
       const data = await getTournaments(usersCoordinates);
       const tournamentsWithCoords = await Promise.all(
         data.map(async (tournament: Tournament) => {
@@ -61,6 +70,9 @@ function App() {
       setTournaments(tournamentsWithCoords);
     } catch (err) {
       console.error("Error fetching tournaments:", err);
+      setIsTournamentsLoading(false);
+    } finally {
+      setIsTournamentsLoading(false);
     }
   };
 
@@ -150,6 +162,17 @@ function App() {
       </GoogleMap>
     );
   };
+
+  if (isTournamentsLoading) {
+    return (
+      <div className="app-container">
+        <Typography variant="h4" gutterBottom>
+          Loading...
+        </Typography>
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
